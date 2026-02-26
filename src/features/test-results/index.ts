@@ -1,0 +1,5 @@
+export { ScoreCard } from "./components/score-card"
+export { AnswersBreakdown } from "./components/answers-breakdown"
+export { ResultsHeader } from "./components/results-header"
+export { ResultsActions } from "./components/results-actions"
+export { useTestResultsPage } from "./hooks/use-test-results-page"
