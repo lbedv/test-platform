@@ -1,16 +1,17 @@
 import { useParams, useNavigate } from "@tanstack/react-router"
 import PathConstants from "@/app/routes/path-constants"
-import { BASE_TESTS } from "@/data/mock-tests"
-import { getTestById } from "../editor-data"
+import { useTestForEdit } from "./use-test-detail"
 
 export function useEditTestPage() {
   const { id } = useParams({ strict: false })
   const navigate = useNavigate()
 
-  const testData = id ? getTestById(id) : null
-  const testStatus = id ? BASE_TESTS.find((t) => t.id === id)?.status ?? "draft" : "draft"
+  const { data, isLoading, isError } = useTestForEdit(id)
 
-  const isNotFound = id && !testData
+  const testData = data ? { settings: data.settings, questions: data.questions } : null
+  const testStatus = data?.status ?? "draft"
+
+  const isNotFound = !isLoading && id && !testData && !isError
   const isEditing = !!id && !!testData
 
   function handleCancel() {
@@ -25,6 +26,8 @@ export function useEditTestPage() {
     id,
     testData: testData || null,
     testStatus,
+    isLoading,
+    isError,
     isNotFound: !!isNotFound,
     isEditing,
     handleCancel,

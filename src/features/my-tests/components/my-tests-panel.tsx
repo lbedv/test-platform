@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Plus } from "lucide-react"
 import { MyTestCard } from "./my-test-card"
-import { USER_TESTS_MOCK } from "../my-tests-data"
+import { useMyTests } from "../hooks/use-my-tests"
 import { useState } from "react"
 import { Pagination } from "@/components/common/pagination"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface MyTestsPanelProps {
   onCreateNew: () => void
@@ -14,9 +15,13 @@ export function MyTestsPanel({ onCreateNew }: MyTestsPanelProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 6
 
-  const totalPages = Math.max(1, Math.ceil(USER_TESTS_MOCK.length / pageSize))
+  const { data: tests, isLoading, isError } = useMyTests()
+
+  const allTests = tests ?? []
+  const totalPages = Math.max(1, Math.ceil(allTests.length / pageSize))
   const startIndex = (currentPage - 1) * pageSize
-  const paginatedTests = USER_TESTS_MOCK.slice(startIndex, startIndex + pageSize)
+  const paginatedTests = allTests.slice(startIndex, startIndex + pageSize)
+
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
@@ -34,19 +39,37 @@ export function MyTestsPanel({ onCreateNew }: MyTestsPanelProps) {
 
       <Separator />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {paginatedTests.map((test) => (
-          <MyTestCard key={test.id} test={test} />
-        ))}
-      </div>
+      {isLoading && (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-[160px] rounded-xl" />
+          ))}
+        </div>
+      )}
 
-      <div className="mt-4">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(p) => setCurrentPage(Math.min(Math.max(1, p), totalPages))}
-        />
-      </div>
+      {isError && (
+        <p className="text-sm text-destructive">Failed to load your tests.</p>
+      )}
+
+      {!isLoading && !isError && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {paginatedTests.map((test) => (
+              <MyTestCard key={test.id} test={test} />
+            ))}
+          </div>
+
+          <div className="mt-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(p) =>
+                setCurrentPage(Math.min(Math.max(1, p), totalPages))
+              }
+            />
+          </div>
+        </>
+      )}
     </section>
   )
 }

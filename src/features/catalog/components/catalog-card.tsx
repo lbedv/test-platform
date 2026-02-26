@@ -14,7 +14,6 @@ import { Clock, HelpCircle, Trophy, User, Users } from "lucide-react"
 import { IconStat } from "@/components/common"
 import type { CatalogTest } from "../types"
 import { DifficultyBadge } from "./difficulty-badge"
-import { DEMO_TEST_ATTEMPT } from "@/data/shared-test-data"
 
 interface CatalogCardProps {
   test: CatalogTest
@@ -92,7 +91,7 @@ export function CatalogCard({ test }: CatalogCardProps) {
           </Button>
         ) : (
           <Button
-            onClick={() => navigate({ to: PathConstants.TEST_ATTEMPT, params: { id: DEMO_TEST_ATTEMPT.id } })}
+            onClick={() => navigate({ to: PathConstants.TEST_ATTEMPT, params: { id: test.id } })}
             size="sm"
             className="w-full"
           >

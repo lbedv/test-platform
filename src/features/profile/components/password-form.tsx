@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card"
 import { FormInput } from "@/components/common"
 import { SuccessAlert } from "./success-alert"
+import { useChangePassword } from "../hooks/use-user-profile"
 
 export function PasswordForm() {
   const [current, setCurrent] = useState("")
@@ -21,8 +22,10 @@ export function PasswordForm() {
     confirm?: string
   }>({})
   const [saved, setSaved] = useState(false)
+  const changePw = useChangePassword()
 
-  const canSubmit = current.length > 0 && newPw.length > 0 && confirm.length > 0
+  const canSubmit =
+    current.length > 0 && newPw.length > 0 && confirm.length > 0
 
   function validate() {
     const newErrors: {
@@ -55,12 +58,18 @@ export function PasswordForm() {
     e.preventDefault()
     if (!validate()) return
 
-    // In a real app, this would call an API
-    setCurrent("")
-    setNewPw("")
-    setConfirm("")
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+    changePw.mutate(
+      { currentPassword: current, newPassword: newPw },
+      {
+        onSuccess() {
+          setCurrent("")
+          setNewPw("")
+          setConfirm("")
+          setSaved(true)
+          setTimeout(() => setSaved(false), 3000)
+        },
+      },
+    )
   }
 
   return (
@@ -74,6 +83,12 @@ export function PasswordForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {saved && <SuccessAlert message="Password changed successfully." />}
+
+          {changePw.error && (
+            <p className="text-sm text-destructive">
+              {changePw.error.message}
+            </p>
+          )}
 
           <FormInput
             id="current-password"
@@ -121,10 +136,10 @@ export function PasswordForm() {
             <Button
               type="submit"
               variant="secondary"
-              disabled={!canSubmit}
+              disabled={!canSubmit || changePw.isPending}
             >
               <Lock className="h-4 w-4" />
-              Update Password
+              {changePw.isPending ? "Updating..." : "Update Password"}
             </Button>
           </div>
         </form>

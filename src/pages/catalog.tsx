@@ -9,6 +9,7 @@ import {
   CatalogEmpty,
   useCatalogFilters,
 } from "@/features/catalog"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function CatalogPage() {
   const {
@@ -22,6 +23,8 @@ export function CatalogPage() {
     safePage,
     hasFilters,
     resultCount,
+    isLoading,
+    isError,
     handleSearchChange,
     handleCategoryChange,
     handleDifficultyChange,
@@ -57,20 +60,37 @@ export function CatalogPage() {
         onOwnershipChange={handleOwnershipChange}
         resultCount={resultCount}
       />
-      {paginated.length > 0 ? (
+
+      {isLoading && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {paginated.map((test) => (
-            <CatalogCard key={test.id} test={test} />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-[200px] rounded-xl" />
           ))}
         </div>
-      ) : (
-        <CatalogEmpty hasFilters={hasFilters} onClearFilters={clearFilters} />
       )}
-      <Pagination
-        currentPage={safePage}
-        totalPages={totalPages}
-        onPageChange={setPage}
-      />
+
+      {isError && (
+        <p className="text-sm text-destructive">Failed to load catalog.</p>
+      )}
+
+      {!isLoading && !isError && (
+        <>
+          {paginated.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {paginated.map((test) => (
+                <CatalogCard key={test.id} test={test} />
+              ))}
+            </div>
+          ) : (
+            <CatalogEmpty hasFilters={hasFilters} onClearFilters={clearFilters} />
+          )}
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </>
+      )}
     </div>
   )
 }

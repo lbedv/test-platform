@@ -1,20 +1,19 @@
-import { useState } from "react"
-
-const INITIAL_USER = {
-  fullName: "Alex Johnson",
-  email: "alex.johnson@example.com",
-  registeredAt: "January 15, 2025",
-}
+import { useUserProfile, useUpdateProfile } from "./use-user-profile"
 
 export function useProfilePage() {
-  const [user, setUser] = useState(INITIAL_USER)
+  const { data: user, isLoading, isError } = useUserProfile()
+  const updateProfile = useUpdateProfile()
 
   function handleSaveProfile(name: string, email: string) {
-    setUser((prev) => ({ ...prev, fullName: name, email }))
+    updateProfile.mutate({ fullName: name, email })
   }
 
   return {
-    user,
+    user: user ?? { fullName: "", email: "", registeredAt: "" },
+    isLoading,
+    isError,
+    isSaving: updateProfile.isPending,
+    saveError: updateProfile.error,
     handleSaveProfile,
   }
 }

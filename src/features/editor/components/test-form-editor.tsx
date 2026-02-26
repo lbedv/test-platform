@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { AlertCircle, CheckCircle2, Lock } from "lucide-react"
 import type { Question } from "@/types/question"
+import { useCreateTest, useUpdateTest, usePublishTest } from "../hooks/use-save-test"
 
 const defaultSettings: TestSettings = {
   title: "",
@@ -25,6 +26,7 @@ const defaultSettings: TestSettings = {
 }
 
 interface TestFormEditorProps {
+  testId?: string
   isEditing?: boolean
   initialSettings?: TestSettings
   initialQuestions?: Question[]
@@ -33,6 +35,7 @@ interface TestFormEditorProps {
 }
 
 export function TestFormEditor({
+  testId,
   isEditing = false,
   initialSettings,
   initialQuestions,
@@ -49,13 +52,17 @@ export function TestFormEditor({
   )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPreview, setShowPreview] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [publishDialogOpen, setPublishDialogOpen] = useState(false)
   const [alert, setAlert] = useState<{
     type: "success" | "error"
     message: string
   } | null>(null)
 
+  const createTest = useCreateTest()
+  const updateTest = useUpdateTest()
+  const publishTestMutation = usePublishTest()
+
+  const isSaving = createTest.isPending || updateTest.isPending || publishTestMutation.isPending
   const isPublished = testStatus === "published"
 
   const validate = useCallback(() => {
@@ -105,21 +112,42 @@ export function TestFormEditor({
       return
     }
 
-    setIsSaving(true)
+    const payload = { settings, questions }
 
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-
-    setIsSaving(false)
-    setAlert({
-      type: "success",
-      message: isEditing
-        ? "Test updated successfully! Redirecting..."
-        : "Test saved successfully! Redirecting...",
-    })
-
-    setTimeout(() => {
-      navigate({ to: PathConstants.MY_TESTS })
-    }, 1500)
+    if (isEditing && testId) {
+      updateTest.mutate(
+        { id: testId, payload },
+        {
+          onSuccess() {
+            setAlert({
+              type: "success",
+              message: "Test updated successfully! Redirecting...",
+            })
+            setTimeout(() => {
+              navigate({ to: PathConstants.MY_TESTS })
+            }, 1500)
+          },
+          onError(err) {
+            setAlert({ type: "error", message: err.message })
+          },
+        },
+      )
+    } else {
+      createTest.mutate(payload, {
+        onSuccess() {
+          setAlert({
+            type: "success",
+            message: "Test saved successfully! Redirecting...",
+          })
+          setTimeout(() => {
+            navigate({ to: PathConstants.MY_TESTS })
+          }, 1500)
+        },
+        onError(err) {
+          setAlert({ type: "error", message: err.message })
+        },
+      })
+    }
   }
 
   function handlePublish() {
@@ -140,20 +168,51 @@ export function TestFormEditor({
 
   async function handlePublishConfirm() {
     setPublishDialogOpen(false)
-    setIsSaving(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-
-    setTestStatus("published")
-    setIsSaving(false)
-    setAlert({
-      type: "success",
-      message: "Test published successfully! Redirecting...",
-    })
-
-    setTimeout(() => {
-      navigate({ to: PathConstants.MY_TESTS })
-    }, 1500)
+    if (!testId) {
+      // Create first then publish would need two steps; for now save as published
+      createTest.mutate(
+        { settings, questions },
+        {
+          onSuccess(data) {
+            publishTestMutation.mutate(data.id, {
+              onSuccess() {
+                setTestStatus("published")
+                setAlert({
+                  type: "success",
+                  message: "Test published successfully! Redirecting...",
+                })
+                setTimeout(() => {
+                  navigate({ to: PathConstants.MY_TESTS })
+                }, 1500)
+              },
+              onError(err) {
+                setAlert({ type: "error", message: err.message })
+              },
+            })
+          },
+          onError(err) {
+            setAlert({ type: "error", message: err.message })
+          },
+        },
+      )
+    } else {
+      publishTestMutation.mutate(testId, {
+        onSuccess() {
+          setTestStatus("published")
+          setAlert({
+            type: "success",
+            message: "Test published successfully! Redirecting...",
+          })
+          setTimeout(() => {
+            navigate({ to: PathConstants.MY_TESTS })
+          }, 1500)
+        },
+        onError(err) {
+          setAlert({ type: "error", message: err.message })
+        },
+      })
+    }
   }
 
   function handleCancel() {

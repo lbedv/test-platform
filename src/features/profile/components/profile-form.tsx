@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card"
 import { FormInput } from "@/components/common"
 import { SuccessAlert } from "./success-alert"
+import { useUpdateProfile } from "../hooks/use-user-profile"
 
 interface ProfileFormProps {
   initialName: string
@@ -26,6 +27,7 @@ export function ProfileForm({
   const [email, setEmail] = useState(initialEmail)
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({})
   const [saved, setSaved] = useState(false)
+  const updateProfile = useUpdateProfile()
 
   const hasChanges = name !== initialName || email !== initialEmail
 
@@ -52,9 +54,16 @@ export function ProfileForm({
     e.preventDefault()
     if (!validate()) return
 
-    onSave(name.trim(), email.trim())
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+    updateProfile.mutate(
+      { fullName: name.trim(), email: email.trim() },
+      {
+        onSuccess() {
+          onSave(name.trim(), email.trim())
+          setSaved(true)
+          setTimeout(() => setSaved(false), 3000)
+        },
+      },
+    )
   }
 
   return (
@@ -68,6 +77,12 @@ export function ProfileForm({
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {saved && <SuccessAlert message="Profile updated successfully." />}
+
+          {updateProfile.error && (
+            <p className="text-sm text-destructive">
+              {updateProfile.error.message}
+            </p>
+          )}
 
           <FormInput
             id="profile-name"
@@ -96,9 +111,12 @@ export function ProfileForm({
           />
 
           <div className="flex justify-end pt-2">
-            <Button type="submit" disabled={!hasChanges}>
+            <Button
+              type="submit"
+              disabled={!hasChanges || updateProfile.isPending}
+            >
               <Save className="h-4 w-4" />
-              Save Changes
+              {updateProfile.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>

@@ -13,7 +13,6 @@ import { Clock, RotateCcw, ArrowRight } from "lucide-react"
 import { IconStat } from "@/components/common"
 import { ScoreBadge } from "./score-badge"
 import type { Attempt } from "../types"
-import { DEMO_TEST_ATTEMPT } from "@/data/shared-test-data"
 
 interface AttemptCardProps {
   attempt: Attempt
@@ -74,7 +73,7 @@ export function AttemptCard({ attempt }: AttemptCardProps) {
           Review
         </Button>
         <Button
-          onClick={() => navigate({ to: PathConstants.TEST_ATTEMPT, params: { id: DEMO_TEST_ATTEMPT.id } })}
+          onClick={() => navigate({ to: PathConstants.TEST_ATTEMPT, params: { id: attempt.testId } })}
           size="sm"
           className="flex-1"
         >

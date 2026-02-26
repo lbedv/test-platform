@@ -1,4 +1,5 @@
-import { useParams } from "@tanstack/react-router"
+import { useParams, useNavigate } from "@tanstack/react-router"
+import PathConstants from "@/app/routes/path-constants"
 import {
   QuestionDisplay,
   FinishDialog,
@@ -7,14 +8,78 @@ import {
   TestSubmittingScreen,
   useTestAttemptPage,
 } from "@/features/test-attempt"
-import { DEMO_TEST, DEMO_TEST_ATTEMPT } from "@/data/shared-test-data"
+import { useStartAttempt } from "@/features/test-attempt/hooks/use-start-attempt"
+import { useSubmitAttempt } from "@/features/test-attempt/hooks/use-submit-attempt"
+import { Skeleton } from "@/components/ui/skeleton"
+import type { TestData, TestAnswer } from "@/features/test-attempt/types"
 
 export function TestAttemptPage() {
   const { id } = useParams({ strict: false })
-  const test = DEMO_TEST
+  const navigate = useNavigate()
 
+  const { data, isLoading, isError } = useStartAttempt(id)
+  const submitMutation = useSubmitAttempt()
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-64 w-full max-w-xl rounded-xl" />
+      </div>
+    )
+  }
+
+  if (isError || !data) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4">
+        <p className="text-destructive font-semibold">Failed to load test.</p>
+        <button
+          onClick={() => navigate({ to: PathConstants.CATALOG })}
+          className="text-sm text-primary underline"
+        >
+          Back to catalog
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <TestAttemptInner
+      test={data.test}
+      attemptId={data.attemptId}
+      onSubmit={(aId, answers) =>
+        submitMutation.mutate(
+          { attemptId: aId, answers },
+          {
+            onSuccess(res) {
+              navigate({
+                to: PathConstants.TEST_RESULTS,
+                params: { id: res.resultId },
+              })
+            },
+          },
+        )
+      }
+      isSubmitting={submitMutation.isPending}
+    />
+  )
+}
+
+function TestAttemptInner({
+  test,
+  attemptId,
+  onSubmit,
+  isSubmitting,
+}: {
+  test: TestData
+  attemptId: string
+  onSubmit: (attemptId: string, answers: TestAnswer[]) => void
+  isSubmitting: boolean
+}) {
   const {
     currentIndex,
+    answers,
     skippedIndices,
     timeRemaining,
     showFinishDialog,
@@ -38,8 +103,13 @@ export function TestAttemptPage() {
     setShowFinishDialog,
   } = useTestAttemptPage(test)
 
-  if (isSubmitted) {
-    return <TestSubmittingScreen attemptId={id ?? DEMO_TEST_ATTEMPT.id} />
+  if (isSubmitted || isSubmitting) {
+    return <TestSubmittingScreen attemptId={attemptId} />
+  }
+
+  function onConfirmFinish() {
+    handleConfirmFinish()
+    onSubmit(attemptId, answers)
   }
 
   return (
@@ -48,7 +118,10 @@ export function TestAttemptPage() {
         test={test}
         answeredCount={answeredCount}
         timeRemaining={timeRemaining}
-        onTimeUp={handleTimeUp}
+        onTimeUp={() => {
+          handleTimeUp()
+          onSubmit(attemptId, answers)
+        }}
         onTick={handleTick}
         progressPercent={progressPercent}
       />
@@ -82,7 +155,7 @@ export function TestAttemptPage() {
       <FinishDialog
         open={showFinishDialog}
         onOpenChange={setShowFinishDialog}
-        onConfirm={handleConfirmFinish}
+        onConfirm={onConfirmFinish}
         totalQuestions={test.totalQuestions}
         answeredCount={answeredCount}
         skippedCount={skippedIndices.size}

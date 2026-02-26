@@ -4,22 +4,23 @@ import PathConstants from "@/app/routes/path-constants"
 import { Button } from "@/components/ui/button"
 import { FormInput, TestPlatformLogo } from "@/components/common"
 import { Loader2Icon } from "lucide-react"
+import { useRegister } from "../hooks/use-register"
 
 const inputClassName =
   "h-11 rounded-xl bg-background/60 transition-all duration-200 focus:bg-background dark:bg-muted/30 dark:focus:bg-muted/50"
 
 export function RegisterCard() {
-  const [isLoading, setIsLoading] = useState(false)
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const navigate = useNavigate()
+  const register = useRegister()
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 2000)
+    if (password !== confirmPassword) return
+    register.mutate({ fullName: name, email, password })
   }
 
   return (
@@ -30,6 +31,12 @@ export function RegisterCard() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        {register.error && (
+          <p className="text-sm text-destructive text-center">
+            {register.error.message}
+          </p>
+        )}
+
         <FormInput
           id="name"
           label="Full name"
@@ -77,10 +84,10 @@ export function RegisterCard() {
 
         <Button
           type="submit"
-          disabled={isLoading}
+          disabled={register.isPending}
           className="h-11 w-full rounded-xl bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/25 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98] disabled:hover:scale-100"
         >
-          {isLoading ? (
+          {register.isPending ? (
             <>
               <Loader2Icon className="h-4 w-4 animate-spin" />
               Creating...
