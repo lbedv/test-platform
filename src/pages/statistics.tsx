@@ -16,6 +16,8 @@ export function StatisticsPage() {
     attempts,
     tests,
     isLoading,
+    isLoadingStats,
+    isLoadingAttempts,
     isError,
     onSelectTest,
   } = useStatisticsPage()
@@ -42,7 +44,7 @@ export function StatisticsPage() {
           description="View detailed performance data for your created tests."
         />
         <p className="text-sm text-destructive">
-          Failed to load statistics data.
+          {"Failed to load statistics data."}
         </p>
       </div>
     )
@@ -58,11 +60,13 @@ export function StatisticsPage() {
         <EmptyState
           icon={<FileText />}
           title="No published tests"
-          description="You haven't published any tests yet. Create and publish a test to see statistics here."
+          description="Create and publish a test to see statistics here."
         />
       </div>
     )
   }
+
+  const hasAttempts = stats != null && stats.totalAttempts > 0
 
   return (
     <div className="flex flex-col gap-8">
@@ -75,7 +79,13 @@ export function StatisticsPage() {
         selectedId={selectedTestId ?? ""}
         onSelect={onSelectTest}
       />
-      {stats.totalAttempts > 0 ? (
+
+      {isLoadingStats || isLoadingAttempts ? (
+        <div className="flex flex-col gap-6">
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-72 w-full rounded-xl" />
+        </div>
+      ) : hasAttempts ? (
         <>
           {selectedTest && <StatsSummary test={selectedTest} stats={stats} />}
           <AttemptsTable attempts={attempts} />
