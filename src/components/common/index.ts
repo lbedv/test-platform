@@ -1,6 +1,0 @@
-export { IconStat } from "./icon-stat"
-export { FormInput } from "./form-input"
-export { PageHeader } from "./page-header"
-export { EmptyState } from "./empty-state"
-export { TestPlatformLogo } from "./testplatform-logo"
-export { Pagination } from "./pagination"

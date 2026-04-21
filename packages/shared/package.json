@@ -1,0 +1,27 @@
+{
+  "name": "@test-platform/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./schemas": {
+      "import": "./schemas/index.ts",
+      "types": "./schemas/index.ts"
+    },
+    "./constants": {
+      "import": "./constants/index.ts",
+      "types": "./constants/index.ts"
+    }
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist node_modules"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "~5.9.3"
+  }
+}

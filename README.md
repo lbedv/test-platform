@@ -1,73 +1,115 @@
-# React + TypeScript + Vite
+# Test Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **[Live Demo](https://online-testing-sepia.vercel.app/)**
 
-Currently, two official plugins are available:
+A full-stack web application for taking and creating online tests, built with a monorepo structure for seamless client-server integration.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **Dashboard:** View overall statistics, track recent attempts, and monitor completion history.
+- **Test Catalog:** Browse, search, filter (by difficulty/category), and sort available tests.
+- **Test Taking Interface:** Time-tracked quiz completion with detailed result analysis.
+- **User Profiles:** Manage registration details and profile information.
+- **User Authentication:** Secure JWT-based authentication with password hashing.
+- **Modern UI/UX:** Fully responsive design with Light/Dark mode toggle.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+### Frontend (`apps/client`)
+- **Runtime:** React 19 with TypeScript
+- **Build Tool:** Vite 7
+- **State & Routing:** TanStack React Query v5, TanStack React Router v1
+- **Styling:** Tailwind CSS 4, shadcn/ui (Radix UI components)
+- **Forms & Validation:** React Hook Form, Zod
+- **UI Utilities:** Lucide React, next-themes, Sonner (toasts)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Backend (`apps/server`)
+- **Runtime:** Node.js with TypeScript
+- **Framework:** Express.js
+- **Database:** MongoDB (Mongoose ODM)
+- **Authentication:** JWT (JSON Web Tokens), bcrypt password hashing
+- **Validation:** Zod schemas
+- **Security:** CORS middleware
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Shared (`packages/shared`)
+- **Validation Schemas:** Zod-based shared schemas for client-server consistency
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Project Structure
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+├── apps/
+│   ├── client/                 # React frontend (Vite)
+│   │   ├── src/
+│   │   │   ├── components/     # Reusable UI (shadcn) & Layouts
+│   │   │   ├── features/       # Feature-based modules (auth, catalog, dashboard, etc.)
+│   │   │   ├── pages/          # Route components
+│   │   │   └── shared/         # Client-side utilities & hooks
+│   │
+│   └── server/                 # Express REST API
+│       ├── src/
+│       │   ├── features/       # Vertical slices (auth, tests, attempts - grouped logic)
+│       │   ├── middleware/     # Auth, error handling, CORS
+│       │   └── app.ts          # Express setup & entry point
+│
+└── packages/
+    └── shared/                 # Shared Zod validation schemas
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (v18 or higher)
+- npm (v9 or higher)
+- MongoDB instance (for backend)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/lbedv/online-testing
+   cd online-testing
+   ```
+
+2. Install dependencies (root level - installs all workspaces):
+   ```bash
+   npm install
+   ```
+
+3. Configure environment variables:
+   - Create `.env` files in `apps/server` with database and JWT configuration
+
+### Development
+
+#### Start Frontend Only
+```bash
+npm run dev
 ```
+Frontend runs on `http://localhost:5173`
+
+#### Start Frontend & Backend
+```bash
+npm run dev:all
+```
+
+#### Start Backend Only
+```bash
+npm run dev --workspace=apps/server
+```
+
+## Available Scripts
+
+All necessary commands can be run from the root directory.
+
+- **`npm install`** - Install dependencies for all workspaces
+- **`npm run dev:all`** - Start both frontend and backend in development mode
+- **`npm run build`** - Build all apps and packages for production
+- **`npm run lint`** / **`npm run type-check`** - Run code quality checks across the monorepo
+
+## Deployment
+
+Deployed on Vercel.
+
+## 📄 License
+
+MIT License
