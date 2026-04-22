@@ -14,7 +14,7 @@ export const BaseTestInfoSchema = z.object({
 });
 
 export const CreateTestRequestSchema = BaseTestInfoSchema.omit({ totalPoints: true, questionsCount: true }).extend({
-  description: z.string().min(5, "Description must be at least 5 characters").max(1000, "Description cannot exceed 1000 characters"),
+  description: z.string().min(5, "Description must be at least 5 characters").max(500, "Description cannot exceed 500 characters"),
   questions: z.array(QuestionWithCorrectAnswerSchema).min(1, "You must add at least one question"),
 });
 export type CreateTestRequest = z.infer<typeof CreateTestRequestSchema>;
