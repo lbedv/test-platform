@@ -1,6 +1,6 @@
 import { ProfileHeader, ProfileForm, PasswordForm } from "@/features/profile";
 import PathConstants from "@/routes/path-constants";
-import { postLogout } from "@/features/profile/api/profile-api";
+import { useLogout } from "@/features/profile/";
 import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/common/page-header";
 import { useAuthStore } from "@/shared/store/auth-store";
@@ -10,6 +10,7 @@ import { LogOut } from "lucide-react";
 
 // ProfilePage component - Displays user profile information and forms to update details and password.
 export function ProfilePage() {
+  const { mutate: handleLogout } = useLogout();
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export function ProfilePage() {
           variant="destructive"
           onClick={() => {
             logout()
-            postLogout()
+            handleLogout()
             navigate({ to: PathConstants.LOGIN })
           }}
         >

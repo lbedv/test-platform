@@ -17,6 +17,7 @@ export function useSubmitDialog(attemptId: string) {
       setShowFinishDialog(false) 
       queryClient.removeQueries({ queryKey: queryKeys.attempt.active() })
       queryClient.invalidateQueries({queryKey: queryKeys.dashboard.attempts() })
+      queryClient.invalidateQueries({queryKey: queryKeys.dashboard.stats() })
       navigate({ to: PathConstants.TEST_RESULTS, params: { id: attemptId } })
     }
   })

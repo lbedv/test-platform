@@ -20,6 +20,7 @@ export function usePublishTest() {
       resetTest();
       clearErrors();
       queryClient.invalidateQueries({ queryKey: queryKeys.catalog.list({}) });
+      queryClient.invalidateQueries({queryKey: queryKeys.dashboard.stats() });
     },
   });
 }
