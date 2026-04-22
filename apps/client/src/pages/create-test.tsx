@@ -18,6 +18,8 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 import { AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 export function CreateTestPage() {
   const [clearDialogOpen, setClearDialogOpen] = useState(false)
@@ -40,12 +42,17 @@ export function CreateTestPage() {
     const isValid = validateTest()
     if (isValid) {
       setPublishDialogOpen(true)
+    } else {
+      toast.error("Please fix validation errors before publishing.")
     }
   }
 
   const confirmPublish = () => {
-    publishTest(test)
-    setPublishDialogOpen(false)
+    publishTest(test, {
+      onSuccess: () => {
+        setPublishDialogOpen(false)
+      }
+    })
   }
 
   const questionErrors = errors.filter((e) => e.field.startsWith('questions'))
@@ -100,10 +107,12 @@ export function CreateTestPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmPublish} disabled={isPending}>
+            <AlertDialogCancel disabled={isPending}
+              >Cancel
+            </AlertDialogCancel>
+            <Button onClick={confirmPublish} disabled={isPending}>
               {isPending ? "Publishing..." : "Publish Test"}
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
