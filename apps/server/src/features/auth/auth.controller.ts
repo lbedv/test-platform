@@ -11,7 +11,7 @@ authRouter.post("/register", catchAsync(async (req, res) => {
   
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "none",
     secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days,
   });
@@ -24,7 +24,7 @@ authRouter.post("/login", catchAsync( async (req, res) => {
   const { user, token } = await authService.login(body);
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "none",
     secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
@@ -35,7 +35,7 @@ authRouter.post("/login", catchAsync( async (req, res) => {
 authRouter.post("/logout", catchAsync(async (_req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "none",
     secure: process.env.NODE_ENV === "production",
   });
   
