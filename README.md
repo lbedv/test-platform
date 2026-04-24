@@ -8,7 +8,10 @@ A full-stack web application for taking and creating online tests, built with a 
 
 - **Dashboard:** View overall statistics, track recent attempts, and monitor completion history.
 - **Test Catalog:** Browse, search, filter (by difficulty/category), and sort available tests.
+- **Test Creation:** Create and edit custom tests with multiple question types and settings.
 - **Test Taking Interface:** Time-tracked quiz completion with detailed result analysis.
+- **Test Results:** Review comprehensive results, scores, and answer breakdowns for completed tests.
+- **Statistics:** Access detailed analytics and performance insights for created tests.
 - **User Profiles:** Manage registration details and profile information.
 - **User Authentication:** Secure JWT-based authentication with password hashing.
 - **Modern UI/UX:** Fully responsive design with Light/Dark mode toggle.
@@ -60,7 +63,7 @@ A full-stack web application for taking and creating online tests, built with a 
 ### Prerequisites
 
 - Node.js (v18 or higher)
-- npm (v9 or higher)
+- pnpm (v9 or higher)
 - MongoDB instance (for backend)
 
 ### Installation
@@ -73,7 +76,7 @@ A full-stack web application for taking and creating online tests, built with a 
 
 2. Install dependencies (root level - installs all workspaces):
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. Configure environment variables:
@@ -83,28 +86,42 @@ A full-stack web application for taking and creating online tests, built with a 
 
 #### Start Frontend Only
 ```bash
-npm run dev
+pnpm run dev:client
 ```
 Frontend runs on `http://localhost:5173`
 
 #### Start Frontend & Backend
 ```bash
-npm run dev:all
+pnpm run dev:all
 ```
 
 #### Start Backend Only
 ```bash
-npm run dev --workspace=apps/server
+pnpm run dev:server
 ```
 
 ## Available Scripts
 
 All necessary commands can be run from the root directory.
 
-- **`npm install`** - Install dependencies for all workspaces
-- **`npm run dev:all`** - Start both frontend and backend in development mode
-- **`npm run build`** - Build all apps and packages for production
-- **`npm run lint`** / **`npm run type-check`** - Run code quality checks across the monorepo
+- **`pnpm install`** - Install dependencies for all workspaces
+- **`pnpm run dev:all`** - Start both frontend and backend in development mode
+- **`pnpm run build`** - Build all apps and packages for production
+- **`pnpm run lint`** - Run ESLint across the monorepo
+- **`pnpm run type-check`** - Run TypeScript type checking across the monorepo
+- **`pnpm run test:run`** - Run tests once across the monorepo
+
+## Testing
+
+Run tests for all workspaces:
+```bash
+pnpm run test
+```
+
+Run tests once (CI mode):
+```bash
+pnpm run test:run
+```
 
 ## Deployment
 
