@@ -6,6 +6,12 @@ import { submitAttempt } from "../api/test-attempt-api";
 import { queryKeys } from "@/shared/lib/query-keys";
 
 
+/**
+ * Custom hook for managing test submission dialog and submission logic.
+ * Handles dialog state, submission mutation, and navigation after successful submit.
+ * @param attemptId - The ID of the test attempt to submit
+ * @returns Object with dialog state and handler functions
+ */
 export function useSubmitDialog(attemptId: string) {
   const [showFinishDialog, setShowFinishDialog] = useState(false)
   const navigate = useNavigate()

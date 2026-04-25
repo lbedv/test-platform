@@ -1,3 +1,4 @@
+// Authentication routes - handles user registration, login, and logout
 import { Router } from "express";
 import { catchAsync } from "../../utils/catchAsync.js";
 import * as authService from "./auth.service.js";
@@ -5,10 +6,13 @@ import { LoginInputSchema, RegisterInputSchema } from "@test-platform/shared/sch
 
 export const authRouter: Router = Router();
 
+// POST /api/auth/register - Create new user account
+// Validates input, creates user, generates JWT token, sets httpOnly cookie
 authRouter.post("/register", catchAsync(async (req, res) => {
   const body = RegisterInputSchema.parse(req.body);
   const { user, token } = await authService.register(body);
   
+  // Set JWT in httpOnly cookie for automatic inclusion in requests
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "none",
@@ -19,6 +23,8 @@ authRouter.post("/register", catchAsync(async (req, res) => {
   res.status(201).json(user);
 }));
 
+// POST /api/auth/login - Authenticate user with email and password
+// Validates credentials, generates JWT token, sets httpOnly cookie
 authRouter.post("/login", catchAsync( async (req, res) => {
   const body = LoginInputSchema.parse(req.body);
   const { user, token } = await authService.login(body);

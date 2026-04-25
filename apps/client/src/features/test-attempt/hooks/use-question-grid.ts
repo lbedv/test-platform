@@ -3,6 +3,14 @@ import type { GridQuestion } from "../types";
 import { QUESTIONS_PER_BLOCK } from "../constants";
 import type { QuestionWithUserAnswer } from "@test-platform/shared/schemas";
 
+/**
+ * Custom hook for managing question grid navigation in blocks.
+ * Divides questions into blocks and provides navigation between them.
+ * @param questionsFromDB - Array of questions with user answers
+ * @param currentIndex - Current question index
+ * @param setSafeCurrentIndex - Safe setter for current index
+ * @returns Object with grid state and navigation functions
+ */
 export function useQuestionGrid(
   questionsFromDB: QuestionWithUserAnswer[],
   currentIndex: number,

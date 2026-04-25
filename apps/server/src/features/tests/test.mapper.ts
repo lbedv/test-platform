@@ -1,6 +1,9 @@
+// Test data mapper - transforms database documents to API response formats
 import { ITest, PopulatedTest } from "./test.model";
 import { TestSummary } from "@test-platform/shared/schemas";
 
+// Transform test document to test summary for catalog display
+// Includes author info and marking if test is owned by current user
 export const toTestSummary = (test: PopulatedTest, currentUserId: string): TestSummary => ({
     id: test._id.toString(),
     testTitle: test.testTitle,

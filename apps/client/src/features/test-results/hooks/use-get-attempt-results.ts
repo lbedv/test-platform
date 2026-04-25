@@ -3,6 +3,11 @@ import { useParams } from "@tanstack/react-router"
 import { queryKeys } from "@/shared/lib/query-keys"
 import { fetchAttemptResults } from "../api/test-results-api"
 
+/**
+ * Custom hook for fetching test attempt results.
+ * Uses route parameter to get attempt ID and caches results indefinitely.
+ * @returns Query object with attempt results data
+ */
 export function useGetAttemptResults() {
   const { id } = useParams({ from: "/app/results/$id" })
 

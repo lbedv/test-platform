@@ -1,8 +1,10 @@
+// Test data model - stores test/quiz documents with questions and statistics
 import mongoose from "mongoose";
 import { User } from "../users/user.model.js";
 import { QUESTION_TYPES, TEST_CATEGORIES, TEST_DIFFICULTIES, QuestionType, Category, Difficulty } from "@test-platform/shared/constants";
 import { AnswerType, AnswerOption } from "@test-platform/shared/schemas";
 
+// Single question within a test
 export interface IQuestion {
   id: string;
   questionText: string;
@@ -13,6 +15,7 @@ export interface IQuestion {
   options?: AnswerOption[];
 }
 
+// Test document interface
 export interface ITest {
   _id: mongoose.Types.ObjectId;
   testTitle: string;
@@ -26,7 +29,7 @@ export interface ITest {
   attemptsCount: number;
   questions: IQuestion[];
   userId: mongoose.Types.ObjectId;
-  // Stats counters (denormalized for performance)
+  // Stats counters (denormalized for performance - cached from attempts)
   totalAttempts: number;
   totalScore: number;
   totalTimeTaken: number;
@@ -34,6 +37,7 @@ export interface ITest {
   createdAt: Date;
   deletedAt?: Date | null;
 };
+// Test document with populated user details
 
 export interface PopulatedTest extends Omit<ITest, 'userId'> {
   userId: {

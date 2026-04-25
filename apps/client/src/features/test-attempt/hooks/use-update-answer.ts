@@ -3,6 +3,12 @@ import { useMutation } from "@tanstack/react-query";
 import type { UpdateAnswerRequest } from "@test-platform/shared/schemas";
 import { updateQuestionAnswer } from "../api/test-attempt-api";
 
+/**
+ * Custom hook for debounced answer updates during test attempts.
+ * Prevents excessive API calls by debouncing updates per question.
+ * @param attemptId - The ID of the test attempt
+ * @returns Object with updateAnswer function
+ */
 export function useUpdateAnswer(attemptId: string) {
   const debounceTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 

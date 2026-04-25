@@ -1,3 +1,4 @@
+// Test management routes - handles test CRUD operations and retrieval
 import { Router } from "express";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { requireAuth, requireAdmin, AuthRequest } from "../../middleware/authGuard.js";
@@ -8,8 +9,10 @@ import { validateObjectId } from "../../utils/validateObjectId.js";
 
 export const testRouter: Router = Router();
 
+// All test routes require authentication
 testRouter.use(requireAuth)
 
+// GET /api/tests - Get all available tests with filtering and pagination
 testRouter.get("/", catchAsync(async (req: AuthRequest, res) => {
   const userId = req.user!.userId;
   
@@ -19,6 +22,7 @@ testRouter.get("/", catchAsync(async (req: AuthRequest, res) => {
   res.status(200).json(catalogTests);
 }));
 
+// POST /api/tests - Create new test with questions
 testRouter.post("/", catchAsync(async (req: AuthRequest, res) => {
   const body = CreateTestRequestSchema.parse(req.body);
   const userId = req.user!.userId;
@@ -28,6 +32,7 @@ testRouter.post("/", catchAsync(async (req: AuthRequest, res) => {
   res.status(201).json(test);
 }));
 
+// DELETE /api/tests/:id - Delete test (admin only)
 testRouter.delete("/:id", requireAdmin, catchAsync(async (req: AuthRequest, res) => {
   const testId = req.params.id;
 
@@ -43,6 +48,7 @@ testRouter.delete("/:id", requireAdmin, catchAsync(async (req: AuthRequest, res)
   res.status(204).send();
 }));
 
+// GET /api/tests/my-tests - Get all tests created by current user
 testRouter.get("/my-tests", catchAsync(async (req: AuthRequest, res) => {
   const userId = req.user!.userId;
   
@@ -51,6 +57,7 @@ testRouter.get("/my-tests", catchAsync(async (req: AuthRequest, res) => {
   res.status(200).json(tests);
 }));
 
+// GET /api/tests/:id/stats - Get test statistics (attempts, scores, etc)
 testRouter.get("/:id/stats", catchAsync(async (req: AuthRequest, res) => {
   const testId = req.params.id;
   const userId = req.user!.userId;
@@ -63,6 +70,7 @@ testRouter.get("/:id/stats", catchAsync(async (req: AuthRequest, res) => {
   res.status(200).json(stats);
 }));
 
+// GET /api/tests/:id/attempts - Get all attempts for a test
 testRouter.get("/:id/attempts", catchAsync(async (req: AuthRequest, res) => {
   const testId = req.params.id;
   const userId = req.user!.userId;

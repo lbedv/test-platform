@@ -6,6 +6,11 @@ export type SortKey = "date" | "score" | "time" | "status"
 type SortDir = "asc" | "desc"
 type StatusFilter = "all" | "pass" | "fail"
 
+/**
+ * Custom hook for managing attempts table state with sorting, filtering, and pagination.
+ * @param attempts - Array of test attempts to display
+ * @returns Object with table state and control functions
+ */
 export function useAttemptsTableState(attempts: TestAttempt[]) {
   const [page, setPage] = useState(1)
   const [sortKey, setSortKey] = useState<SortKey>("date")

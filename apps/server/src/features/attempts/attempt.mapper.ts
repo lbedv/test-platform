@@ -2,13 +2,19 @@ import { IAnswer, PopulatedAttempt, AttemptStats } from "./attempt.model";
 import { IQuestion } from "../tests/test.model";
 import { ActiveAttemptResponse, AttemptSummary, AttemptResultsResponse, AttemptStatsResponse } from "@test-platform/shared/schemas";
 
+// Attempt data mapper - transforms database documents to API response formats
+
+// Map populated attempt document to active attempt response
+// Includes test info and questions with user's current answers (for test in-progress)
 export const toActiveAttemptResponse = (attempt: PopulatedAttempt): ActiveAttemptResponse => {
   const test = attempt.testId;
 
+  // Map user's answers to question IDs for quick lookup
   const answersMap = new Map(
     attempt.answers.map((a) => [a.id, a.userAnswer])
   );
 
+  // Sort questions by number and include user's current answers
   const sortedQuestions = test.questions
     .map((q: IQuestion) => ({
       id: q.id,
@@ -42,13 +48,17 @@ export const toActiveAttemptResponse = (attempt: PopulatedAttempt): ActiveAttemp
   };
 };
 
+// Map populated attempt document to attempt result response
+// Includes correct answers, user answers, and evaluation outcomes
 export const toAttemptResult = (attempt: PopulatedAttempt): AttemptResultsResponse => {
   const test = attempt.testId;
 
+  // Map attempt answers to question IDs for quick lookup
   const answersMap = new Map(
     attempt.answers.map((a: IAnswer) => [a.id, a])
   );
 
+  // Sort questions and include correct answers with evaluation outcomes
   const sortedQuestions = test.questions
     .map((q: IQuestion) => {
       const userAnswerData = answersMap.get(q.id);
@@ -90,6 +100,8 @@ export const toAttemptResult = (attempt: PopulatedAttempt): AttemptResultsRespon
   };
 };
 
+// Map populated attempt document to attempt summary format
+// Used for attempt history/results list
 export const toAttemptSummary = (attempt: PopulatedAttempt) : AttemptSummary => ({
   id: attempt._id.toString(),
   testId: attempt.testId._id.toString(),
@@ -107,6 +119,7 @@ export const toAttemptSummary = (attempt: PopulatedAttempt) : AttemptSummary => 
   isPassed: attempt.isPassed,
 });
 
+// Map attempt statistics to response format for leaderboards
 export const toAttemptsList = (attempts: AttemptStats[]): AttemptStatsResponse[] =>
   attempts.map((attempt): AttemptStatsResponse => ({
     id: attempt._id.toString(),

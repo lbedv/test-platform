@@ -1,3 +1,4 @@
+// Test attempt routes - handles starting, submitting, and retrieving test attempts
 import { Router } from "express";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { requireAuth, AuthRequest } from "../../middleware/authGuard.js";
@@ -7,9 +8,10 @@ import { validateObjectId } from "../../utils/validateObjectId.js";
 
 export const attemptsRouter: Router = Router();
 
+// All attempt routes require authentication
 attemptsRouter.use(requireAuth);
 
-// Get active attempt
+// GET /api/attempts/active - Get user's current active attempt (if any)
 attemptsRouter.get("/active", catchAsync(async (req: AuthRequest, res) => {
     const userId = req.user!.userId;
 
@@ -77,7 +79,7 @@ attemptsRouter.get("/:id/results", catchAsync(async (req: AuthRequest, res) => {
   })
 );
 
-// Get all completed attempts
+// GET /api/attempts - Get all completed attempts by current user
 attemptsRouter.get("/", catchAsync(async (req: AuthRequest, res) => {
     const userId = req.user!.userId;
 

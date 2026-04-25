@@ -1,3 +1,4 @@
+// User profile routes - handles user data retrieval and profile updates
 import { Router } from "express";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { requireAuth, type AuthRequest } from "../../middleware/authGuard.js";
@@ -7,8 +8,10 @@ import { toAuthResponse } from "./user.mapper.js";
 
 export const usersRouter: Router = Router();
 
+// All user routes require authentication
 usersRouter.use(requireAuth);
 
+// GET /api/users/me - Retrieve current user profile
 usersRouter.get("/me", catchAsync(async (req: AuthRequest, res) => {
   const userId = req.user!.userId;
   const user = await userService.getProfile(userId);
@@ -24,6 +27,7 @@ usersRouter.get("/me", catchAsync(async (req: AuthRequest, res) => {
   }
 ));
 
+// PUT /api/users/me - Update user profile (first and last name)
 usersRouter.put("/me", catchAsync(async (req: AuthRequest, res) => {
   const userId = req.user!.userId;
   const body = ProfileUpdateSchema.parse(req.body);
@@ -31,6 +35,7 @@ usersRouter.put("/me", catchAsync(async (req: AuthRequest, res) => {
   res.json(toAuthResponse(updatedUser));
 }));
 
+// PUT /api/users/me/password - Change user password
 usersRouter.put("/me/password", catchAsync(async (req: AuthRequest, res) => {
   const userId = req.user!.userId;
   const body = PasswordChangeSchema.parse(req.body);
@@ -38,6 +43,7 @@ usersRouter.put("/me/password", catchAsync(async (req: AuthRequest, res) => {
   res.status(204).send();
 }));
 
+// GET /api/users/me/stats - Get dashboard statistics for current user
 usersRouter.get("/me/stats", catchAsync(async (req: AuthRequest, res) => {
   const userId = req.user!.userId;
   const stats = await userService.getDashboardStats(userId);

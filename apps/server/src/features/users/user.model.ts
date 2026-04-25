@@ -1,7 +1,9 @@
+// User data model - stores user accounts with authentication and statistics
 import mongoose from "mongoose";
 
 export type UserRole = "USER" | "ADMIN";
 
+// User document interface
 export interface IUser {
   _id: mongoose.Types.ObjectId;
   email: string;
@@ -25,7 +27,9 @@ const UserSchema = new mongoose.Schema<IUser>(
     passwordHash: { type: String, required: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
+    // User role determines access permissions (USER vs ADMIN)
     role: { type: String, enum: ["USER", "ADMIN"], default: "USER" },
+    // Aggregated statistics for performance (instead of computing on-the-fly)
     stats: {
       totalTestsTaken: { type: Number, default: 0 },
       totalScore: { type: Number, default: 0 }, // Sum of all attempt percentages

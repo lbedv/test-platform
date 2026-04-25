@@ -3,6 +3,11 @@ import { deleteTest } from "../api/catalog-api";
 import { queryKeys } from "@/shared/lib/query-keys";
 import { toast } from "sonner";
 
+/**
+ * Custom hook for deleting tests from the catalog.
+ * Invalidates catalog queries after successful deletion and shows toast notifications.
+ * @returns Mutation object for deleting tests
+ */
 export function useDeleteTest() {
     const queryClient = useQueryClient();
 

@@ -1,3 +1,4 @@
+// Test attempt data model - stores user responses and scoring for test completions
 import mongoose from 'mongoose';
 import { QUESTION_TYPES, ANSWER_OUTCOME, ATTEMPT_STATUS, QuestionType, AnswerOutcome, AttemptStatus } from '@test-platform/shared/constants';
 import { AnswerType } from '@test-platform/shared/schemas';
@@ -5,6 +6,7 @@ import { User } from '../users/user.model';
 import { Test, ITest } from '../tests/test.model';
 import { Types } from 'mongoose';
 
+// Single answer response in an attempt
 export interface IAnswer {
   id: string;
   answerOutcome: AnswerOutcome;
@@ -12,6 +14,7 @@ export interface IAnswer {
   userAnswer?: AnswerType;
 }
 
+// Test attempt document interface
 export interface IAttempt {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
@@ -27,10 +30,12 @@ export interface IAttempt {
   expiresAt: Date;
 }
 
+// Attempt document with populated test details
 export interface PopulatedAttempt extends Omit<IAttempt, 'testId'> {
   testId: ITest
 }
 
+// Attempt statistics used for leaderboards and dashboards
 export interface AttemptStats {
   _id: mongoose.Types.ObjectId;
   userId: {

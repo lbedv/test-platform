@@ -4,6 +4,11 @@ import { startAttempt } from "../api/catalog-api";
 import { toast } from "sonner"
 import PathConstants from "@/routes/path-constants";
 
+/**
+ * Custom hook for starting a new test attempt.
+ * Handles navigation to test attempt page and shows appropriate toast messages.
+ * @returns Mutation object for starting test attempts
+ */
 export function useStartAttempt() {
     const navigate = useNavigate();
 

@@ -3,6 +3,13 @@ import type { QuestionWithUserAnswer } from "@test-platform/shared/schemas";
 import type { Answer } from "../types";
 import { useUpdateAnswer } from "./use-update-answer";
 
+/**
+ * Custom hook for managing overall test attempt state.
+ * Handles user answers, current question navigation, and answer tracking.
+ * @param attemptId - The ID of the test attempt
+ * @param questionsFromDB - Array of questions with user answers from database
+ * @returns Object with test state and navigation functions
+ */
 export function useTestManager(attemptId: string, questionsFromDB: QuestionWithUserAnswer[]) {
 
   const { updateAnswer } = useUpdateAnswer(attemptId);

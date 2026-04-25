@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 
+/**
+ * Custom hook for managing countdown timer during test attempts.
+ * Tracks remaining time and triggers callback when time runs out.
+ * @param startedAt - ISO string of when the test started
+ * @param timeLimitSeconds - Total time limit in seconds
+ * @param onTimeUp - Optional callback when time reaches zero
+ * @returns Object with time state and formatted time string
+ */
 export function useTestTimer(
   startedAt: string | undefined, 
   timeLimitSeconds: number,

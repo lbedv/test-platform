@@ -4,6 +4,8 @@
 
 A full-stack web application for taking and creating online tests, built with a monorepo structure for seamless client-server integration.
 
+<img width="1483" height="717" alt="image" src="https://github.com/user-attachments/assets/a3d862c7-d2a1-4629-99e0-40fed5533b08" />
+
 ## Features
 
 - **Dashboard:** View overall statistics, track recent attempts, and monitor completion history.

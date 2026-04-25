@@ -6,6 +6,11 @@ import type { CreateTestRequest } from "@test-platform/shared/schemas";
 import { queryKeys } from "@/shared/lib/query-keys";
 import { queryClient } from "@/shared/lib/query-client";
 
+/**
+ * Custom hook for publishing/creating new tests.
+ * Resets editor state on success and invalidates relevant queries.
+ * @returns Mutation object for publishing tests
+ */
 export function usePublishTest() {
   const { resetTest, clearErrors } = useTestEditorStore();
 

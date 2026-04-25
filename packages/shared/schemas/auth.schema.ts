@@ -1,3 +1,5 @@
+// Authentication validation schemas
+// Defines request/response formats for login, registration, and auth responses
 import { z } from "zod";
 
 /**
@@ -12,8 +14,8 @@ export const LoginInputSchema = z.object({
 export type LoginInput = z.infer<typeof LoginInputSchema>
 
 /**
- * Validation schema for registration form input.
- * Requires valid email, password, and name fields.
+ * Validation schema for registration form input (server-side).
+ * Requires valid email, password (min 8 chars), and name fields.
  */
 export const RegisterInputSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -25,8 +27,8 @@ export const RegisterInputSchema = z.object({
 export type RegisterInput = z.infer<typeof RegisterInputSchema>
 
 /**
- * Validation schema for registration form.
- * Enforces password requirements and matching confirmation password.
+ * Validation schema for client-side registration form.
+ * Extends RegisterInputSchema with password confirmation field.
  */
 export const RegisterFormSchema = RegisterInputSchema.extend({
   confirmPassword: z.string(),

@@ -1,3 +1,5 @@
+// Attempt service - core business logic for test attempts
+// Handles attempt creation, answer updates, submission, and result retrieval
 import mongoose from "mongoose";
 import { createError } from "../../utils/createError.js";
 import * as attemptMapper from "./attempt.mapper.js";
@@ -7,6 +9,7 @@ import { AnswerType, UpdateAnswerRequest, ActiveAttemptResponse, AttemptResultsR
 
 // --- CORE SERVICES ---
 
+// Retrieve active attempt (in-progress) for a user
 export const getActiveAttempt = async (userId: string): Promise<ActiveAttemptResponse> => {
 
   const attempt = await Attempt.findOne({ userId: new mongoose.Types.ObjectId(userId), status: "in_progress" })
@@ -21,10 +24,13 @@ export const getActiveAttempt = async (userId: string): Promise<ActiveAttemptRes
   return attemptMapper.toActiveAttemptResponse(attempt);
 };
 
+// Create new attempt for a test or resume existing attempt
+// Returns existing active attempt if one already exists
 export const createAttempt = async (
   testId: string,
   userId: string
 ): Promise<StartAttemptResponse> => {
+  // Check if user already has active attempt for this test
   const existingAttempt = await Attempt.findOne({
     userId: new mongoose.Types.ObjectId(userId),
     testId: new mongoose.Types.ObjectId(testId),
@@ -41,9 +47,11 @@ export const createAttempt = async (
     };
   }
 
+  // Get test to verify it exists and initialize answers
   const test = await Test.findOne({ _id: testId, deletedAt: null }).lean();
   if (!test) throw createError("Test not found or has been deleted", 404);
 
+  // Create new attempt with empty answers (all skipped initially)
   const attempt = new Attempt({
     userId: new mongoose.Types.ObjectId(userId),
     testId: new mongoose.Types.ObjectId(testId),
@@ -67,6 +75,7 @@ export const createAttempt = async (
   };
 };
 
+// Update single answer in active attempt, auto-submit if time expired
 export const updateQuestionAnswer = async (
   attemptId: string, 
   questionInput: UpdateAnswerRequest
@@ -100,6 +109,8 @@ export const updateQuestionAnswer = async (
   };
 };
 
+// Submit attempt: evaluate all answers, calculate score and metrics
+// Updates test and user statistics counters for reporting
 export const submitAttempt = async (attemptId: string): Promise<SubmitAttempResponse> => {
   const attempt = await Attempt.findById(attemptId).select('_id status testId userId answers createdAt expiresAt');
   if (!attempt) throw createError("Attempt not found", 404);
@@ -108,7 +119,9 @@ export const submitAttempt = async (attemptId: string): Promise<SubmitAttempResp
   const test = await Test.findById(attempt.testId).select('questions totalPoints passingPercentage totalAttempts totalScore totalTimeTaken passedAttempts');
   if (!test) throw createError("Test not found", 404);
 
+  // Evaluate answers and calculate points earned
   const pointsEarned = evaluateAttemptAnswers(attempt.answers, test.questions);
+  // Calculate attempt metrics (completion time, percentage score, pass/fail)
   const metrics = calculateAttemptMetrics(attempt.expiresAt, attempt.createdAt, test.totalPoints, pointsEarned, test.passingPercentage);
 
   Object.assign(attempt, {
@@ -122,7 +135,7 @@ export const submitAttempt = async (attemptId: string): Promise<SubmitAttempResp
 
   await attempt.save();
 
-  // Update test stats counters
+  // Update test denormalized statistics (used for leaderboards and analytics)
   test.totalAttempts += 1;
   test.totalScore += metrics.percentage;
   test.totalTimeTaken += metrics.timeTakenSeconds;
@@ -131,7 +144,7 @@ export const submitAttempt = async (attemptId: string): Promise<SubmitAttempResp
   }
   await test.save();
 
-  // Update user stats counters
+  // Update user denormalized statistics for dashboard
   const user = await User.findById(attempt.userId);
   if (user) {
     user.stats.totalTestsTaken += 1;
@@ -146,12 +159,15 @@ export const submitAttempt = async (attemptId: string): Promise<SubmitAttempResp
   }
 };
 
+// Get attempt results: retrieves completed attempt with correct answers and user answers
+// Shows evaluation outcomes for review/feedback
 export const getAttemptResults = async (attemptId: string): Promise<AttemptResultsResponse> => {
   const attempt = await Attempt.findById(attemptId)
     .select('_id testId status pointsEarned percentage timeTakenSeconds completedAt isPassed answers')
     .populate("testId", "_id questions testTitle testCategory testDifficulty totalPoints timeLimitSeconds passingPercentage questionsCount")
     .lean<PopulatedAttempt>();
 
+  // Only return results for completed attempts
   if (!attempt || attempt.status !== "completed") {
     throw createError("Attempt not found or not completed", 404);
   }
@@ -159,6 +175,8 @@ export const getAttemptResults = async (attemptId: string): Promise<AttemptResul
   return attemptMapper.toAttemptResult(attempt);
 };
 
+// Get user's completed attempts: retrieves all finished tests in reverse chronological order
+// Used for user's attempt history
 export const getCompletedAttempts = async (userId: string): Promise<AttemptSummary[]> => {
   const attempts = await Attempt.find({
     userId: new mongoose.Types.ObjectId(userId),
@@ -172,6 +190,8 @@ export const getCompletedAttempts = async (userId: string): Promise<AttemptSumma
   return attempts.map(attemptMapper.toAttemptSummary);
 };
 
+// Get test leaderboard: retrieves all completed attempts for a test with participant details
+// Used for test creator to view attempt statistics and leaderboard
 export const getTestAttempts = async (testId: string) => {
   // Check if test is not soft-deleted
   const test = await Test.findOne({ _id: testId, deletedAt: null }).select('_id').lean();
@@ -190,23 +210,29 @@ export const getTestAttempts = async (testId: string) => {
 
 // --- HELPER FUNCTIONS ---
 
+// Verify attempt ownership: ensures user owns the attempt (for authorization checks)
 export const validateAttemptOwnership = async (attemptId: string, userId: string) => {
   const attempt = await Attempt.findById(attemptId).select('userId').lean();
   if (!attempt) {
     throw createError("Attempt not found", 404);
   }
+  // Verify owner matches current user
   if (attempt.userId.toString() !== userId) {
     throw createError("Unauthorized: Attempt does not belong to current user", 403);
   }
 };
 
+// Evaluate single answer: compare user answer to correct answer based on question type
+// Handles: multipleChoice (array matching), textInput (case-insensitive), numeric/boolean (equality)
 const evaluateAnswer = (
   questionType: QuestionType,
   correctAnswer: AnswerType,
   userAnswer?: AnswerType,
 ): AnswerOutcome => {
+  // Unanswered questions are skipped
   if (userAnswer === undefined) return "skipped";
 
+  // Multiple choice: arrays must match (order-independent, all options must match)
   if (questionType === "multipleChoice") {
     if (!Array.isArray(userAnswer) || !Array.isArray(correctAnswer)) return "incorrect";
     if (userAnswer.length !== correctAnswer.length) return "incorrect";
@@ -217,14 +243,19 @@ const evaluateAnswer = (
     return [...userSet].every((a) => correctSet.has(a)) ? "correct" : "incorrect";
   } 
   
+  // Text input: case-insensitive and whitespace-trimmed comparison
   if (questionType === "textInput") {
     return String(userAnswer).toLowerCase().trim() === String(correctAnswer).toLowerCase().trim() ? "correct" : "incorrect";
   } 
   
+  // Numeric and boolean: exact equality check
   return userAnswer === correctAnswer ? "correct" : "incorrect";
 };
 
+// Evaluate all answers: compares all user answers to correct answers
+// Updates answer.answerOutcome for each question and returns total points earned
 const evaluateAttemptAnswers = (answers: IAnswer[], questions: IQuestion[]): number => {
+  // Create map for O(1) question lookups
   const testQuestionMap = new Map<string, IQuestion>();
   (questions).forEach((q: IQuestion) => {
     testQuestionMap.set(q.id, q);
@@ -232,16 +263,19 @@ const evaluateAttemptAnswers = (answers: IAnswer[], questions: IQuestion[]): num
 
   let pointsEarned = 0;
 
+  // Evaluate each answer and accumulate points
   (answers).forEach((answer: IAnswer) => {
     const testQuestion = testQuestionMap.get(answer.id);
     if (!testQuestion) return;
 
+    // Evaluate this answer and store outcome
     const outcome = evaluateAnswer(
       testQuestion.questionType,
       testQuestion.correctAnswer,
       answer.userAnswer,
     );
 
+    // Add points if correct
     if (outcome === "correct") pointsEarned += testQuestion.pointsPossible;
     answer.answerOutcome = outcome;
   });
@@ -249,6 +283,8 @@ const evaluateAttemptAnswers = (answers: IAnswer[], questions: IQuestion[]): num
   return pointsEarned;
 };
 
+// Calculate attempt metrics: completion time, score percentage, and pass/fail determination
+// Respects time limit: caps completion time at expiresAt if exceeded
 const calculateAttemptMetrics = (
   expiresAt: Date,
   createdAt: Date,
@@ -257,9 +293,12 @@ const calculateAttemptMetrics = (
   passingPercentage: number
 ) => {
   const now = new Date();
+  // If time expired, use expiration time; otherwise use actual completion time
   const completedAt = now > expiresAt ? expiresAt : now;
   const timeTakenSeconds = Math.floor((completedAt.getTime() - createdAt.getTime()) / 1000);
+  // Calculate percentage score (avoid division by zero)
   const percentage = Math.round((pointsEarned / (totalPoints || 1)) * 100);
+  // Determine pass/fail based on minimum passing percentage
   const isPassed = percentage >= passingPercentage;
 
   return { completedAt, timeTakenSeconds, percentage, isPassed };

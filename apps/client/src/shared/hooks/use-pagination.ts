@@ -7,6 +7,12 @@ interface UsePaginationResult<T> {
   setCurrentPage: (page: number) => void
 }
 
+/**
+ * Generic custom hook for handling pagination of arrays.
+ * @param items - Array of items to paginate
+ * @param itemsPerPage - Number of items per page
+ * @returns Object with paginated items and pagination controls
+ */
 export function usePagination<T>(
   items: T[],
   itemsPerPage: number
