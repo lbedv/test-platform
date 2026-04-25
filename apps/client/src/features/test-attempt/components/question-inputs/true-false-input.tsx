@@ -12,8 +12,8 @@ export function TrueFalseInput({
   return (
     <div className="space-y-3">
       <RadioGroup
-        value={value === undefined ? undefined : String(value)}
-        onValueChange={(val) => onChange(val === "true")}
+        value={value === undefined ? "" : String(value)}
+        onValueChange={(val) => onChange(val === "" ? undefined : val === "true")}
         className="space-y-1"
       >
         {["true", "false"].map((val) => (
