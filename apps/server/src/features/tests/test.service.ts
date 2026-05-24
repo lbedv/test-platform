@@ -95,7 +95,7 @@ export const getCatalogTests = async (filters: CatalogFilterRequest, userId: str
   const [totalCount, tests] = await Promise.all([
     Test.countDocuments(query),
     Test.find(query)
-      .select("_id testTitle testCategory testDifficulty totalPoints timeLimitSeconds passingPercentage questionsCount description attemptsCount createdAt userId")
+      .select("_id testTitle testCategory testDifficulty totalPoints timeLimitSeconds passingPercentage questionsCount description totalAttempts createdAt userId")
       .populate<{ userId: { _id: mongoose.Types.ObjectId; firstName: string; lastName: string } }>("userId", "firstName lastName")
       .sort(sortOptions)
       .skip(skip)

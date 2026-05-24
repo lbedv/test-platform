@@ -14,7 +14,7 @@ export const toTestSummary = (test: PopulatedTest, currentUserId: string): TestS
     passingPercentage: test.passingPercentage,
     questionsCount: test.questionsCount,
     description: test.description,
-    attemptsCount: test.attemptsCount,
+    attemptsCount: test.totalAttempts,
     isMine: currentUserId === test.userId._id.toString(),
     author: {
       firstName: test.userId.firstName,
